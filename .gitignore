@@ -1,0 +1,13 @@
+# Secrets / credentials — never commit
+*.pem
+*.key
+id_ed25519*
+id_rsa*
+.env
+*.tfvars
+terraform.tfstate*
+.terraform/
+
+# Personal config / share links
+*-client.json
+secrets/
