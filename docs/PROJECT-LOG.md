@@ -60,9 +60,23 @@ résumé bullets in [`RESUME.md`](RESUME.md). Add a dated entry whenever somethi
 - [x] `scripts/gen-link.sh` to build client `vless://` links (no panel in the IaC path).
 - [x] Decision: IaC path drops 3X-UI in favor of a templated `config.json` to avoid the mutable
       panel/DB state that bit us in Phase 1.
-- [ ] **Pending: end-to-end test** — apply on a throwaway droplet, run the playbook, verify, then
-      `terraform destroy`. Doubles as a rehearsal for the end-of-July migration.
-- [ ] _Log after test: what broke, what the automation saved vs. manual._
+- [x] **End-to-end test PASSED** — `terraform apply` created a throwaway `vpn-test` droplet (7
+      resources), `ansible-playbook` provisioned it (16 ok / 12 changed / 0 failed), a loopback
+      Reality test confirmed the tunnel egresses through the node, then `terraform destroy` removed
+      everything. Full from-scratch deploy in ~5 minutes. This doubles as the end-of-July migration
+      rehearsal.
+- [x] Notable: the declaratively-templated `config.json` worked **first try** — none of the
+      panel/DB hot-reload drama from Phase 1. Validates the "no panel in IaC" decision.
+
+**Bugs found & fixed during the test (good interview material):**
+- Control node: distro `ansible` (apt) was broken/mismatched (`No module named six.moves`); the
+  fix was a clean `ansible-core<2.18` via pip (2.18 needs Python 3.11; WSL Ubuntu has 3.10).
+- `ansible.cfg` used the removed `stdout_callback = yaml` → replaced with built-in
+  `result_format = yaml`. Pinned `community.general` to `<11` for ansible-core 2.17 compatibility.
+- Terraform: `terraform destroy` failed with DO 412 "cannot delete a project with resources" because
+  the inline `resources` attribute makes Terraform delete the project before its members. Fixed by
+  managing membership via a separate `digitalocean_project_resources` resource so destroy detaches
+  first.
 
 **Execution note:** Terraform runs on Windows natively; Ansible needs a Linux control node — run it
 under **WSL** or from CI (Linux runner) in the L2 DevSecOps step.
