@@ -74,11 +74,19 @@ resource "digitalocean_reserved_ip_assignment" "vpn" {
 }
 
 # Group everything under a DO Project for tidy organization.
+# Membership is managed via a separate digitalocean_project_resources resource
+# (NOT the inline `resources` attribute) so that `terraform destroy` detaches the
+# resources back to the default project BEFORE deleting this one — otherwise DO
+# returns 412 "cannot delete a project with resources".
 resource "digitalocean_project" "cloudlab" {
   name        = "cloudlab"
   description = "Personal VPN infrastructure (IaC)"
   purpose     = "Web Application"
   environment = "Development"
+}
+
+resource "digitalocean_project_resources" "cloudlab" {
+  project = digitalocean_project.cloudlab.id
   resources = [
     digitalocean_droplet.vpn.urn,
     digitalocean_reserved_ip.vpn.urn,
