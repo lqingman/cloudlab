@@ -1,0 +1,21 @@
+# Normalize line endings. The repo stores LF; these files run on Linux
+# (shell scripts, Ansible, Terraform), so force LF on checkout to avoid
+# CRLF breaking interpreters (e.g. bash "bad interpreter").
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.j2   text eol=lf
+*.tf   text eol=lf
+*.hcl  text eol=lf
+*.json text eol=lf
+*.cfg  text eol=lf
+*.ini  text eol=lf
+*.md   text eol=lf
+
+# Binaries (never normalize)
+*.png binary
+*.jpg binary
+*.gz  binary
+*.zip binary
