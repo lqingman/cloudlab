@@ -1,0 +1,27 @@
+---
+# Copy to all.yml. Keep SECRETS encrypted with ansible-vault:
+#   ansible-vault encrypt group_vars/all.yml
+# (all.yml is git-ignored; only this .example is committed.)
+
+# --- non-secret ---
+deploy_user: deploy
+ssh_port: 22
+xray_port: 443
+reality_dest: "www.microsoft.com:443"
+reality_sni: "www.microsoft.com"
+
+# --- secrets: generate, then vault-encrypt this file ---
+# SSH public key to install for the deploy user:
+ssh_public_key: "ssh-ed25519 AAAA... you@host"
+
+# Xray client UUID:           cat /proc/sys/kernel/random/uuid
+xray_uuid: "REPLACE-WITH-UUID"
+
+# Reality keypair:            xray x25519
+#   "PrivateKey"  -> xray_private_key  (server)
+#   "Password/PublicKey" -> xray_public_key (for building client links; not used by server)
+xray_private_key: "REPLACE-WITH-REALITY-PRIVATE-KEY"
+xray_public_key: "REPLACE-WITH-REALITY-PUBLIC-KEY"
+
+# Short id:                   openssl rand -hex 8
+xray_short_id: "REPLACE-WITH-SHORTID"

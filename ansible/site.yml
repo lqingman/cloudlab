@@ -1,0 +1,17 @@
+---
+# Full provisioning of a cloudlab VPN node.
+# Run after `terraform apply` creates the droplet.
+#
+#   ansible-galaxy collection install -r requirements.yml
+#   ansible-playbook site.yml
+#
+# Mirrors (and supersedes) scripts/server-setup.sh, then installs and
+# declaratively configures Xray (VLESS + Reality).
+
+- name: Provision VPN node
+  hosts: vpn
+  become: true
+
+  roles:
+    - role: hardening   # sudo user, key-only SSH, UFW, fail2ban
+    - role: xray        # xray-core + templated VLESS+Reality config

@@ -1,0 +1,6 @@
+# Copy to hosts.ini and set the IP (use the reserved IP from `terraform output`).
+# First run targets root (key auth). After the hardening role runs you can
+# switch ansible_user to the deploy user.
+
+[vpn]
+vpn ansible_host=REPLACE_WITH_RESERVED_IP ansible_user=root

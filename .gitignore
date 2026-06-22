@@ -11,3 +11,8 @@ terraform.tfstate*
 # Personal config / share links
 *-client.json
 secrets/
+
+# Ansible — real (secret) vars and local inventory; only *.example is committed
+ansible/group_vars/all.yml
+ansible/inventory/hosts.ini
+*.retry
