@@ -50,12 +50,22 @@ résumé bullets in [`RESUME.md`](RESUME.md). Add a dated entry whenever somethi
   convenient (x-ui is enabled for autostart and comes back on its own). Rebooting drops active
   client connections briefly.
 
-## (todo) Phase 2: Infrastructure as Code
+## 2026-06-21 — Phase 2: Infrastructure as Code (L1) — scaffolding ✅, deploy test pending
 
-- [ ] Terraform: provision the Droplet + firewall (DigitalOcean provider)
-- [ ] Ansible: automate everything `server-setup.sh` does, plus Xray install/config
-- [ ] One-command rebuild from scratch; document the runbook
-- [ ] _Log here: what you'd do differently, what the automation saved_
+- [x] Terraform module (`terraform/`): droplet + DO cloud firewall (SSH + Xray only) + reserved IP
+      + SSH key + project. Parameterized via variables; `terraform validate` passes (v1.15.5).
+- [x] Ansible (`ansible/`): `hardening` role (sudo user, key-only SSH drop-in, UFW, fail2ban) and
+      `xray` role (xray-core install + **declaratively templated** `config.json` for VLESS+Reality —
+      no panel, fully reproducible). Config validated via `xray run -test` in the template task.
+- [x] `scripts/gen-link.sh` to build client `vless://` links (no panel in the IaC path).
+- [x] Decision: IaC path drops 3X-UI in favor of a templated `config.json` to avoid the mutable
+      panel/DB state that bit us in Phase 1.
+- [ ] **Pending: end-to-end test** — apply on a throwaway droplet, run the playbook, verify, then
+      `terraform destroy`. Doubles as a rehearsal for the end-of-July migration.
+- [ ] _Log after test: what broke, what the automation saved vs. manual._
+
+**Execution note:** Terraform runs on Windows natively; Ansible needs a Linux control node — run it
+under **WSL** or from CI (Linux runner) in the L2 DevSecOps step.
 
 ## (todo) Phase 3: migration (by end of July 2026)
 
