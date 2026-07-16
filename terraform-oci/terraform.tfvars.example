@@ -1,0 +1,26 @@
+# Copy to terraform.tfvars. The real file is git-ignored.
+# OCI API credentials are read from ~/.oci/config; no private key is stored here.
+
+# Use the OCI tenancy OCID for the root compartment, or a dedicated compartment OCID.
+compartment_ocid = "ocid1.compartment.oc1..REPLACE_ME"
+
+# This MUST be your account's home region for Always Free eligibility.
+# Examples: ap-singapore-1, ap-tokyo-1, ap-seoul-1, ca-toronto-1.
+region = "ap-singapore-1"
+
+# Paste the contents of ~/.ssh/id_ed25519.pub (or another public key).
+ssh_public_key = "ssh-ed25519 AAAA... you@host"
+
+# Conservative defaults for Xray. These stay below the 2-OCPU/12-GB cap.
+ocpus         = 1
+memory_in_gbs = 2
+
+# OCI Always Free includes 200 GB total across all boot/block volumes. Keep this
+# at 50 GB unless you have checked every other volume in the tenancy.
+boot_volume_size_in_gbs = 50
+
+# Strongly recommended: replace with your current public IPv4 + /32.
+# allowed_ssh_cidrs = ["203.0.113.4/32"]
+
+# If the first AD has no A1 capacity, try 2 or 3 when the region has multiple ADs.
+# availability_domain_number = 1
