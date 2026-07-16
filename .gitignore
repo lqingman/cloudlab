@@ -6,6 +6,7 @@ id_rsa*
 .env
 *.tfvars
 terraform.tfstate*
+tfplan
 .terraform/
 
 # Personal config / share links

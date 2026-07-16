@@ -6,6 +6,7 @@ reproducible, version-controlled replacement for the manual Phase 1 steps and
 
 ```
 terraform/   # provisions the droplet, cloud firewall, reserved IP, SSH key, project
+terraform-oci/ # provisions a separate OCI Always Free A1 node for migration/testing
 ansible/     # hardens the host + installs & configures Xray (VLESS + Reality)
 ```
 
@@ -56,6 +57,12 @@ ansible-vault encrypt group_vars/all.yml
 
 ansible-playbook site.yml --ask-vault-pass
 ```
+
+### OCI Always Free alternative
+
+To create an OCI node without changing or destroying the DigitalOcean Terraform state, follow
+[`terraform-oci/README.md`](../terraform-oci/README.md). Its defaults are 1 A1 OCPU, 2 GB RAM, and a
+50 GB boot volume, with validation caps at the Always Free-only limits of 2 OCPUs and 12 GB RAM.
 
 ## 3. Build a client link
 
