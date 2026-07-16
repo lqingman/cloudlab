@@ -6,11 +6,15 @@ id_rsa*
 .env
 *.tfvars
 terraform.tfstate*
-tfplan
+tfplan*
 .terraform/
+
+# Local rendering/inspection artifacts
+tmp/
 
 # Personal config / share links
 *-client.json
+*-client.txt
 secrets/
 
 # Ansible — real (secret) vars and local inventory; only *.example is committed
