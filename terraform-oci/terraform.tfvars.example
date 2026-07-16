@@ -12,6 +12,7 @@ region = "ap-singapore-1"
 ssh_public_key = "ssh-ed25519 AAAA... you@host"
 
 # Conservative defaults for Xray. These stay below the 2-OCPU/12-GB cap.
+instance_shape = "VM.Standard.A1.Flex"
 ocpus         = 1
 memory_in_gbs = 2
 

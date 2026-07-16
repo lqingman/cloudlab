@@ -31,6 +31,17 @@ variable "instance_name" {
   default     = "cloudlab-vpn-oci"
 }
 
+variable "instance_shape" {
+  description = "Always Free compute shape. E2.1.Micro is fixed AMD/1 GB; A1.Flex uses the configurable limits below."
+  type        = string
+  default     = "VM.Standard.A1.Flex"
+
+  validation {
+    condition     = contains(["VM.Standard.A1.Flex", "VM.Standard.E2.1.Micro"], var.instance_shape)
+    error_message = "instance_shape must be VM.Standard.A1.Flex or VM.Standard.E2.1.Micro."
+  }
+}
+
 variable "ocpus" {
   description = "Ampere A1 OCPUs. Always Free-only accounts allow at most 2 OCPUs total across all A1 instances."
   type        = number

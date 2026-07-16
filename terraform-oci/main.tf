@@ -7,12 +7,13 @@ data "oci_identity_availability_domains" "available" {
   compartment_id = var.compartment_ocid
 }
 
-# Select the newest Canonical Ubuntu 24.04 ARM image compatible with A1.Flex.
+# Select the newest Canonical Ubuntu 24.04 image compatible with the chosen
+# Always Free shape. OCI returns ARM64 for A1.Flex and x86_64 for E2.1.Micro.
 data "oci_core_images" "ubuntu" {
   compartment_id           = var.compartment_ocid
   operating_system         = "Canonical Ubuntu"
   operating_system_version = "24.04"
-  shape                    = "VM.Standard.A1.Flex"
+  shape                    = var.instance_shape
   sort_by                  = "TIMECREATED"
   sort_order               = "DESC"
 }
@@ -95,12 +96,15 @@ resource "oci_core_instance" "vpn" {
   availability_domain  = data.oci_identity_availability_domains.available.availability_domains[var.availability_domain_number - 1].name
   compartment_id       = var.compartment_ocid
   display_name         = var.instance_name
-  shape                = "VM.Standard.A1.Flex"
+  shape                = var.instance_shape
   preserve_boot_volume = false
 
-  shape_config {
-    ocpus         = var.ocpus
-    memory_in_gbs = var.memory_in_gbs
+  dynamic "shape_config" {
+    for_each = var.instance_shape == "VM.Standard.A1.Flex" ? [1] : []
+    content {
+      ocpus         = var.ocpus
+      memory_in_gbs = var.memory_in_gbs
+    }
   }
 
   source_details {

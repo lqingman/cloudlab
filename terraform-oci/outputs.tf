@@ -15,7 +15,11 @@ output "selected_image" {
 
 output "free_tier_shape" {
   description = "Provisioned A1 shape allocation."
-  value       = "VM.Standard.A1.Flex: ${var.ocpus} OCPU, ${var.memory_in_gbs} GB RAM, ${var.boot_volume_size_in_gbs} GB boot volume"
+  value = var.instance_shape == "VM.Standard.A1.Flex" ? (
+    "VM.Standard.A1.Flex: ${var.ocpus} OCPU, ${var.memory_in_gbs} GB RAM, ${var.boot_volume_size_in_gbs} GB boot volume"
+    ) : (
+    "VM.Standard.E2.1.Micro: fixed AMD micro shape, 1 GB RAM, ${var.boot_volume_size_in_gbs} GB boot volume"
+  )
 }
 
 output "ansible_inventory_hint" {
