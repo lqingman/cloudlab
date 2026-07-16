@@ -1,6 +1,60 @@
 ---
 # Base security hardening — declarative equivalent of scripts/server-setup.sh.
 
+- name: Check whether the swap file already exists
+  ansible.builtin.stat:
+    path: "{{ swap_file }}"
+  register: swap_file_status
+
+- name: Allocate swap file
+  ansible.builtin.command:
+    cmd: "fallocate -l {{ swap_size }} {{ swap_file }}"
+  when: not swap_file_status.stat.exists
+  changed_when: true
+
+- name: Secure swap file permissions
+  ansible.builtin.file:
+    path: "{{ swap_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Format new swap file
+  ansible.builtin.command:
+    cmd: "mkswap {{ swap_file }}"
+  when: not swap_file_status.stat.exists
+  changed_when: true
+
+- name: Persist swap in fstab
+  ansible.posix.mount:
+    path: none
+    src: "{{ swap_file }}"
+    fstype: swap
+    opts: sw
+    dump: "0"
+    passno: "0"
+    state: present
+
+- name: Read active swap devices
+  ansible.builtin.command:
+    cmd: swapon --show=NAME --noheadings
+  register: active_swap_devices
+  changed_when: false
+
+- name: Enable swap
+  ansible.builtin.command:
+    cmd: "swapon {{ swap_file }}"
+  when: swap_file not in active_swap_devices.stdout_lines
+  changed_when: true
+
+- name: Prefer RAM over swap
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: "{{ swap_swappiness }}"
+    state: present
+    sysctl_set: true
+    reload: true
+
 - name: Update apt cache and upgrade packages
   ansible.builtin.apt:
     update_cache: true
@@ -43,6 +97,37 @@
     mode: "0644"
     validate: "sshd -t -f %s"
   notify: Restart ssh
+
+# OCI Ubuntu images ship an INPUT REJECT rule before UFW's chains. Add the
+# service allow rule before that reject, both live and in the persistent file.
+- name: Check for OCI persistent iptables rules
+  ansible.builtin.stat:
+    path: /etc/iptables/rules.v4
+  register: oci_iptables_rules
+
+- name: Check OCI image allow rule for Xray
+  ansible.builtin.command:
+    cmd: "iptables -C INPUT -p tcp --dport {{ xray_port }} -j ACCEPT"
+  register: oci_xray_allow_rule
+  changed_when: false
+  failed_when: false
+  when: oci_iptables_rules.stat.exists
+
+- name: Allow Xray before the OCI image reject rule
+  ansible.builtin.command:
+    cmd: "iptables -I INPUT 5 -p tcp --dport {{ xray_port }} -j ACCEPT"
+  when:
+    - oci_iptables_rules.stat.exists
+    - (oci_xray_allow_rule.rc | default(1)) != 0
+  changed_when: true
+
+- name: Persist Xray allow rule for OCI images
+  ansible.builtin.lineinfile:
+    path: /etc/iptables/rules.v4
+    line: "-A INPUT -p tcp -m tcp --dport {{ xray_port }} -j ACCEPT"
+    insertbefore: "^-A INPUT -j REJECT --reject-with icmp-host-prohibited$"
+    state: present
+  when: oci_iptables_rules.stat.exists
 
 - name: Set UFW default policies
   community.general.ufw:

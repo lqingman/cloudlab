@@ -11,7 +11,9 @@
   ansible.builtin.template:
     src: config.json.j2
     dest: /usr/local/etc/xray/config.json
-    mode: "0644"
+    owner: root
+    group: nogroup
+    mode: "0640"
     validate: "/usr/local/bin/xray run -test -config %s"
   notify: Restart xray
 

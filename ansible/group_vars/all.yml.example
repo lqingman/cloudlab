@@ -9,6 +9,9 @@ ssh_port: 22
 xray_port: 443
 reality_dest: "www.microsoft.com:443"
 reality_sni: "www.microsoft.com"
+swap_file: /swapfile
+swap_size: 2G
+swap_swappiness: 10
 
 # --- secrets: generate, then vault-encrypt this file ---
 # SSH public key to install for the deploy user:
