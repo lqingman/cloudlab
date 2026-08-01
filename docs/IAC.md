@@ -64,6 +64,17 @@ To create an OCI node without changing or destroying the DigitalOcean Terraform 
 [`terraform-oci/README.md`](../terraform-oci/README.md). Its defaults are 1 A1 OCPU, 2 GB RAM, and a
 50 GB boot volume, with validation caps at the Always Free-only limits of 2 OCPUs and 12 GB RAM.
 
+### GCP node for low-latency regions
+
+OCI Always Free pins the node to the tenancy's home region. Toronto is ~200–250 ms from mainland
+China, which is fine for browsing but not for video calls. [`terraform-gcp/`](../terraform-gcp/README.md)
+provisions a billed `e2-micro` in Tokyo (~50–80 ms) for periods when latency actually matters,
+reusing the same Ansible roles. Roughly $15 USD/month all-in; see that README for the cost
+breakdown and the egress-to-China premium.
+
+Run the two in parallel rather than migrating. Two providers in two regions are unlikely to be
+blocked at the same time, which is the entire point of keeping the free OCI node alive.
+
 ## 3. Build a client link
 
 The IaC node has no panel, so generate the `vless://` link from your values:
