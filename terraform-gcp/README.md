@@ -98,9 +98,15 @@ mainland Chinese ISPs **before** relying on it:
 terraform output reachability_check_hint
 ```
 
-If it is unreachable, release and re-reserve the address — `terraform taint
-google_compute_address.vpn` then re-apply — and re-test. This costs almost nothing and is much
-cheaper than discovering the problem from inside China.
+If it is unreachable, take a new address and re-test:
+
+```bash
+terraform apply -replace="google_compute_address.vpn" -replace="google_compute_instance.vpn"
+```
+
+A reserved address cannot be released while an instance holds it, so both are replaced together;
+the rebuilt instance needs the Ansible run repeated. This costs almost nothing and is much cheaper
+than discovering the problem from inside China.
 
 Re-check every couple of days during the soak period. Reachability is a snapshot, not a guarantee.
 
