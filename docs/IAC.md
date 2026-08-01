@@ -70,10 +70,38 @@ The IaC node has no panel, so generate the `vless://` link from your values:
 
 ```bash
 SERVER_IP=<reserved ip> UUID=<xray_uuid> PBK=<reality public key> SID=<short id> \
-  ../scripts/gen-link.sh
+  SNI=<reality_sni> ../scripts/gen-link.sh
 ```
 
-Paste into v2rayN / v2rayNG / Shadowrocket.
+`SNI` must match `reality_sni` in `group_vars/all.yml` exactly — the script's default
+(`www.microsoft.com`) is not necessarily what the node is running.
+
+## 4. Client apps
+
+The inbound is **VLESS + Reality with `flow=xtls-rprx-vision`**, so a client needs to support both
+Reality *and* the Vision flow. Plain "V2Ray" clients that predate Reality won't work.
+
+| Platform | Client | Notes |
+| --- | --- | --- |
+| Windows | v2rayN | Xray-core based; the reference client for this stack. |
+| macOS | v2rayN, or Shadowrocket (Mac App Store) | |
+| Android | v2rayNG | Same core, same link format. |
+| iOS | **Streisand** (free) or **Shadowrocket** ($2.99) | Both Xray-core based. sing-box also works but is config-file oriented. |
+
+iOS notes: these apps are delisted from the China App Store, so a non-CN Apple ID is required.
+Import by copying the `vless://` link to the clipboard (the app offers to add it) or by scanning a
+QR code — `gen-link.sh` output pipes straight into `qrencode -t ANSIUTF8`.
+
+After importing on any client, verify three fields survived the parse — some clients silently drop
+them, which produces a connection that handshakes but behaves badly:
+
+- `flow` = `xtls-rprx-vision`
+- `fp` = `chrome` (the uTLS fingerprint Reality's disguise depends on)
+- `sni` = the node's `reality_sni`
+
+Then confirm egress actually goes through the node by checking your public IP against the reserved
+IP. If it still shows your local address, the client is in rule mode and routing that traffic
+direct — retest in global mode.
 
 ## Testing without touching the live node
 
