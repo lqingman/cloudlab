@@ -1,0 +1,23 @@
+---
+# Print the vless:// share link for every node, reading the per-node identity
+# straight out of the vault. scripts/gen-link.sh still works for one-off links,
+# but it needs each value passed by hand — error-prone once the values are
+# encrypted and differ per node.
+#
+#   ansible-playbook gen-link.yml --ask-vault-pass
+#   ansible-playbook gen-link.yml --ask-vault-pass --limit gcp-vpn
+#
+# connection: local — this only renders variables, it never touches the nodes.
+
+- name: Build client share links
+  hosts: vpn
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Show vless:// link
+      ansible.builtin.debug:
+        msg: >-
+          vless://{{ xray_uuid }}@{{ ansible_host }}:{{ xray_port }}?type=tcp&encryption=none&security=reality&pbk={{
+          xray_public_key }}&fp=chrome&sni={{ reality_sni }}&sid={{ xray_short_id }}&spx=%2F&flow=xtls-rprx-vision#{{
+          link_name | default(inventory_hostname) }}
