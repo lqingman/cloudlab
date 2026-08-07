@@ -21,7 +21,11 @@ ansible/     # hardens the host + installs & configures Xray (VLESS + Reality)
 - **Reserved IP** so the public address survives a droplet rebuild — clients don't need
   reconfiguring after `terraform destroy`/`apply`.
 - **Secrets never committed**: Terraform reads the DO token from `TF_VAR_do_token`; Ansible secrets
-  live in a vault-encrypted `group_vars/all.yml`. Only `*.example` files are tracked.
+  live in vault-encrypted `group_vars/all.yml` and `host_vars/*.yml`. Only `*.example` files are
+  tracked.
+- **Per-node identity in `host_vars/`**: each node gets its own Reality dest/SNI, UUID, keypair, and
+  short id, so a run against one node cannot rewrite another's config and a blocked or compromised
+  node does not implicate the others. `group_vars/all.yml` holds only what every node shares.
 
 ## Prerequisites
 
@@ -48,15 +52,25 @@ cd ../ansible
 ansible-galaxy collection install -r requirements.yml
 
 cp inventory/hosts.ini.example inventory/hosts.ini     # set the reserved IP
-cp group_vars/all.yml.example group_vars/all.yml       # fill in secrets, then:
+
+# Shared settings (deploy user, ports, swap, SSH key):
+cp group_vars/all.yml.example group_vars/all.yml
+
+# Per-node identity — one file per inventory host name:
+cp host_vars/oci-vpn.yml.example host_vars/oci-vpn.yml
 #   generate values:
 #     uuid:   cat /proc/sys/kernel/random/uuid
 #     keys:   xray x25519        (locally, or on any host with xray)
 #     short:  openssl rand -hex 8
-ansible-vault encrypt group_vars/all.yml
+
+ansible-vault encrypt group_vars/all.yml host_vars/*.yml
 
 ansible-playbook site.yml --ask-vault-pass
 ```
+
+Adding a node means adding an inventory entry and a `host_vars/<host>.yml` with its own generated
+values. The `xray` role asserts those are present, so a missing file fails the run with the path it
+expects rather than silently templating an empty SNI.
 
 ### OCI Always Free alternative
 
@@ -84,8 +98,9 @@ SERVER_IP=<reserved ip> UUID=<xray_uuid> PBK=<reality public key> SID=<short id>
   SNI=<reality_sni> ../scripts/gen-link.sh
 ```
 
-`SNI` must match `reality_sni` in `group_vars/all.yml` exactly — the script's default
-(`www.microsoft.com`) is not necessarily what the node is running.
+`SNI` must match that node's `reality_sni` in `host_vars/<host>.yml` exactly — the script's default
+(`www.microsoft.com`) is not necessarily what the node is running, and each node uses a different
+one.
 
 ## 4. Client apps
 

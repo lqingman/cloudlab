@@ -2,29 +2,20 @@
 # Copy to all.yml. Keep SECRETS encrypted with ansible-vault:
 #   ansible-vault encrypt group_vars/all.yml
 # (all.yml is git-ignored; only this .example is committed.)
+#
+# This file holds ONLY what every node shares. Anything that differs per node —
+# the Reality dest/SNI and the node's Xray identity — lives in host_vars/<host>.yml
+# so that running the playbook against one node cannot rewrite another's config.
+# See host_vars/*.yml.example.
 
 # --- non-secret ---
 deploy_user: deploy
 ssh_port: 22
 xray_port: 443
-reality_dest: "www.cloudflare.com:443"
-reality_sni: "www.cloudflare.com"
 swap_file: /swapfile
 swap_size: 2G
 swap_swappiness: 10
 
 # --- secrets: generate, then vault-encrypt this file ---
-# SSH public key to install for the deploy user:
+# SSH public key to install for the deploy user (same key across nodes is fine):
 ssh_public_key: "ssh-ed25519 AAAA... you@host"
-
-# Xray client UUID:           cat /proc/sys/kernel/random/uuid
-xray_uuid: "REPLACE-WITH-UUID"
-
-# Reality keypair:            xray x25519
-#   "PrivateKey"  -> xray_private_key  (server)
-#   "Password/PublicKey" -> xray_public_key (for building client links; not used by server)
-xray_private_key: "REPLACE-WITH-REALITY-PRIVATE-KEY"
-xray_public_key: "REPLACE-WITH-REALITY-PUBLIC-KEY"
-
-# Short id:                   openssl rand -hex 8
-xray_short_id: "REPLACE-WITH-SHORTID"

@@ -89,6 +89,9 @@ for h in www.cloudflare.com www.shopify.com www.icloud.com www.bing.com; do prin
 Both `TLSv1.3` and `ALPN protocol: h2` must be present. Prefer a different dest from the one the
 OCI node uses, so a single blocked dest cannot take out both nodes.
 
+Record the result in `ansible/host_vars/gcp-vpn.yml` along with a UUID, keypair, and short id
+generated for this node alone — not copied from the OCI node.
+
 ## 4. Verify the address is not already blocked
 
 Cloud IPv4 addresses are recycled, and a reused address may already be blacklisted. Check it from
