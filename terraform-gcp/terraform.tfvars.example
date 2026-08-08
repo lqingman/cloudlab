@@ -1,0 +1,27 @@
+# Copy to terraform.tfvars. The real file is git-ignored.
+# Credentials come from `gcloud auth application-default login`; nothing secret lives here.
+
+project_id = "REPLACE-WITH-PROJECT-ID"
+
+# Tokyo. Lowest latency to most of mainland China.
+# For southern China (Guangdong/Shenzhen), asia-southeast1 / asia-southeast1-b is comparable.
+region = "asia-northeast1"
+zone   = "asia-northeast1-b"
+
+# Paste the contents of ~/.ssh/id_ed25519.pub (or another public key).
+ssh_public_key = "ssh-ed25519 AAAA... you@host"
+
+# Strongly recommended: replace with your current public IPv4 + /32.
+# allowed_ssh_cidrs = ["203.0.113.4/32"]
+
+# e2-micro is ample for Xray. Always Free e2-micro does NOT apply in Asian
+# regions, so this instance is billed — see README for the cost estimate.
+machine_type = "e2-micro"
+
+# Cheapest disk type; 10 GB is the minimum and is plenty for Xray.
+boot_disk_size_gb = 10
+boot_disk_type    = "pd-standard"
+
+# PREMIUM routes over Google's backbone and noticeably improves China routing.
+# STANDARD is cheaper per GB but takes the public internet — worse peak-hour behaviour.
+network_tier = "PREMIUM"

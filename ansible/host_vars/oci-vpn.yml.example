@@ -1,0 +1,27 @@
+---
+# Copy to oci-vpn.yml (matching the inventory host name), then vault-encrypt it:
+#   ansible-vault encrypt host_vars/oci-vpn.yml
+# The real file is git-ignored; only this .example is committed.
+#
+# Everything here is PER-NODE. Each node gets its own identity so that a
+# compromised or blocked node does not implicate the other. Values shared by
+# both nodes (deploy_user, ports, swap, ssh_public_key) live in group_vars/all.yml.
+
+# --- Reality camouflage target ---
+# Must complete a TLS 1.3 + HTTP/2 handshake FROM THIS NODE. Verify before use:
+#   openssl s_client -connect HOST:443 -servername HOST -tls1_3 -alpn h2 </dev/null
+# Deliberately different from the other node's dest, so one blocked dest cannot
+# take out both paths.
+reality_dest: "www.cloudflare.com:443"
+reality_sni: "www.cloudflare.com"
+
+# --- Per-node secrets ---
+# xray_uuid:         cat /proc/sys/kernel/random/uuid   (or uuidgen)
+# keypair:           xray x25519
+#   "PrivateKey"        -> xray_private_key  (server)
+#   "Password"/"PublicKey" -> xray_public_key (client links only; unused by the server)
+# xray_short_id:     openssl rand -hex 8
+xray_uuid: "REPLACE-WITH-UUID"
+xray_private_key: "REPLACE-WITH-REALITY-PRIVATE-KEY"
+xray_public_key: "REPLACE-WITH-REALITY-PUBLIC-KEY"
+xray_short_id: "REPLACE-WITH-SHORTID"

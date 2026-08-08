@@ -2,6 +2,24 @@
 # Install xray-core and configure a VLESS + Reality inbound declaratively.
 # No control panel — the config.json IS the source of truth (fully reproducible).
 
+# Every value below is per-node and lives in host_vars/<inventory_hostname>.yml.
+# Fail loudly when one is missing: a node inheriting another node's identity, or
+# templating an empty SNI, produces a config that starts cleanly and then fails
+# in ways that are hard to trace from the client side.
+- name: Assert per-node Reality settings are defined
+  ansible.builtin.assert:
+    that:
+      - reality_dest is defined and reality_dest | length > 0
+      - reality_sni is defined and reality_sni | length > 0
+      - xray_uuid is defined and xray_uuid | length > 0
+      - xray_private_key is defined and xray_private_key | length > 0
+      - xray_short_id is defined and xray_short_id | length > 0
+    fail_msg: >-
+      Missing per-node Xray settings for {{ inventory_hostname }}. Create
+      ansible/host_vars/{{ inventory_hostname }}.yml from the matching .example
+      and vault-encrypt it.
+    quiet: true
+
 - name: Install xray-core via official installer
   ansible.builtin.shell:
     cmd: 'bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install'
