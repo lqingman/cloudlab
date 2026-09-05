@@ -55,6 +55,36 @@
     sysctl_set: true
     reload: true
 
+# The path from mainland China loses enough packets that cubic keeps halving its
+# window and settles around 10-90 KB/s per flow, even though the path can carry
+# tens of Mbit/s in aggregate. BBR does not read loss as congestion, which took a
+# single stream from 91 KB/s to 1.4-3.2 MB/s on the Tokyo node (2026-08-14).
+- name: Load the BBR module on boot
+  ansible.builtin.copy:
+    content: "tcp_bbr\n"
+    dest: /etc/modules-load.d/bbr.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Load the BBR module now
+  community.general.modprobe:
+    name: tcp_bbr
+    state: present
+
+# fq is what BBR paces through; leaving fq_codel here gives up part of the gain.
+- name: Use BBR with fair queueing
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_file: /etc/sysctl.d/99-bbr.conf
+    sysctl_set: true
+    reload: true
+  loop:
+    - { name: net.core.default_qdisc, value: fq }
+    - { name: net.ipv4.tcp_congestion_control, value: bbr }
+
 - name: Update apt cache and upgrade packages
   ansible.builtin.apt:
     update_cache: true
